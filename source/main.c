@@ -25,6 +25,7 @@
 #define RP            (1.0f/50.0f)   /* Probabilité coffre rare */
 
 /* Résolution 3DS */
+#define RGB(r,g,b) ((u32)(0xFF000000u | ((b)<<16) | ((g)<<8) | (r)))
 #define TOP_W  400
 #define TOP_H  240
 #define BOT_W  320
@@ -94,52 +95,52 @@ typedef struct {
 static const Skin SKINS[MAX_SKINS] = {
     /* id, nom, couleur, prix, spd, cm, ch, legend */
     { 0, "Classique",   0xFFFFFFFF, 0,      1.0f, 1.0f, 1.0f, 0 },
-    { 1, "Ninja",       0xFF2A2A2AFF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    { 2, "Robo",        0xFFB8C4D6FF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    { 3, "Astronaute",  0xFFF2F2F2FF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    { 4, "Cow-boy",     0xFFE8B78AFF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    { 5, "Roi",         0xFF4DA3FFFF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    { 6, "Chef",        0xFFFF9D2EFF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    { 7, "Zombie",      0xFF7AC96BFF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    { 8, "Sorcier",     0xFFB07BFFFF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    { 9, "Pirate",      0xFFFF4D4DFF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    {10, "Matelot",     0xFF7FD1FFFF, 100,  1.0f, 1.0f, 1.0f, 0 },
-    {11, "Eclair",      0xFFFFE14DFF, 75000,1.5f, 1.0f, 1.0f, 0 },
-    {12, "Turbo",       0xFFFF6A2BFF, 75000,1.5f, 1.0f, 1.0f, 0 },
-    {13, "Galaxie",     0xFF7A3CFFFF, 250000,1.0f,2.0f, 1.0f, 0 },
-    {14, "Viking",      0xFFE8C9A0FF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    {15, "Fantome",     0xFFE8F0FFFF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    {16, "Samourai",    0xFFC0392BFF, 0,    1.0f, 1.0f, 1.0f, 0 },
-    {17, "Magma",       0xFFFF6A00FF, 250000,1.0f,3.0f, 1.0f, 0 },
-    {18, "Cristal",     0xFF7FD6FFFF, 250000,1.25f,1.0f,1.5f, 0 },
-    {19, "Neon",        0xFFFF00E5FF, 250000,1.75f,1.5f,1.0f, 0 },
-    {20, "Or hebdo",    0xFFFFD41FFF, 0,    2.0f, 5.0f, 2.0f, 1 },
+    { 1, "Ninja",       RGB(0x2A,0x2A,0x2A), 0,    1.0f, 1.0f, 1.0f, 0 },
+    { 2, "Robo",        RGB(0xB8,0xC4,0xD6), 0,    1.0f, 1.0f, 1.0f, 0 },
+    { 3, "Astronaute",  RGB(0xF2,0xF2,0xF2), 0,    1.0f, 1.0f, 1.0f, 0 },
+    { 4, "Cow-boy",     RGB(0xE8,0xB7,0x8A), 0,    1.0f, 1.0f, 1.0f, 0 },
+    { 5, "Roi",         RGB(0x4D,0xA3,0xFF), 0,    1.0f, 1.0f, 1.0f, 0 },
+    { 6, "Chef",        RGB(0xFF,0x9D,0x2E), 0,    1.0f, 1.0f, 1.0f, 0 },
+    { 7, "Zombie",      RGB(0x7A,0xC9,0x6B), 0,    1.0f, 1.0f, 1.0f, 0 },
+    { 8, "Sorcier",     RGB(0xB0,0x7B,0xFF), 0,    1.0f, 1.0f, 1.0f, 0 },
+    { 9, "Pirate",      RGB(0xFF,0x4D,0x4D), 0,    1.0f, 1.0f, 1.0f, 0 },
+    {10, "Matelot",     RGB(0x7F,0xD1,0xFF), 100,  1.0f, 1.0f, 1.0f, 0 },
+    {11, "Eclair",      RGB(0xFF,0xE1,0x4D), 75000,1.5f, 1.0f, 1.0f, 0 },
+    {12, "Turbo",       RGB(0xFF,0x6A,0x2B), 75000,1.5f, 1.0f, 1.0f, 0 },
+    {13, "Galaxie",     RGB(0x7A,0x3C,0xFF), 250000,1.0f,2.0f, 1.0f, 0 },
+    {14, "Viking",      RGB(0xE8,0xC9,0xA0), 0,    1.0f, 1.0f, 1.0f, 0 },
+    {15, "Fantome",     RGB(0xE8,0xF0,0xFF), 0,    1.0f, 1.0f, 1.0f, 0 },
+    {16, "Samourai",    RGB(0xC0,0x39,0x2B), 0,    1.0f, 1.0f, 1.0f, 0 },
+    {17, "Magma",       RGB(0xFF,0x6A,0x00), 250000,1.0f,3.0f, 1.0f, 0 },
+    {18, "Cristal",     RGB(0x7F,0xD6,0xFF), 250000,1.25f,1.0f,1.5f, 0 },
+    {19, "Neon",        RGB(0xFF,0x00,0xE5), 250000,1.75f,1.5f,1.0f, 0 },
+    {20, "Or hebdo",    RGB(0xFF,0xD4,0x1F), 0,    2.0f, 5.0f, 2.0f, 1 },
 };
 
 static const Map MAPS[MAX_MAPS] = {
-    { "Ile",         0xFF3F9A46FF, 0xFF1B5A9CFF, 0xFFE9D28FFF,
-      0xFFA05A1CFF, 0xFFC4731FFF, 0xFFFFD41FFF,
+    { "Ile",         RGB(0x3F,0x9A,0x46), RGB(0x1B,0x5A,0x9C), RGB(0xE9,0xD2,0x8F),
+      RGB(0xA0,0x5A,0x1C), RGB(0xC4,0x73,0x1F), RGB(0xFF,0xD4,0x1F),
       {"Palmier","Palmier","Rocher","Plante","Cactus"} },
-    { "Desert",      0xFFD9B45AFF, 0xFF8A6A2AFF, 0xFFF3E2A0FF,
-      0xFFB88A4AFF, 0xFFD6A85CFF, 0xFFFFE08AFF,
+    { "Desert",      RGB(0xD9,0xB4,0x5A), RGB(0x8A,0x6A,0x2A), RGB(0xF3,0xE2,0xA0),
+      RGB(0xB8,0x8A,0x4A), RGB(0xD6,0xA8,0x5C), RGB(0xFF,0xE0,0x8A),
       {"Cactus","Cactus","Rocher","Dune","Chameau"} },
-    { "Neige",       0xFFE6F1F8FF, 0xFF2C6F9CFF, 0xFFFFFFFFFF,
-      0xFF7EC8F0FF, 0xFFA8E0FFFF, 0xFFE8F8FFFF,
+    { "Neige",       RGB(0xE6,0xF1,0xF8), RGB(0x2C,0x6F,0x9C), RGB(0xFF,0xFF,0xFF),
+      RGB(0x7E,0xC8,0xF0), RGB(0xA8,0xE0,0xFF), RGB(0xE8,0xF8,0xFF),
       {"Sapin","Sapin","Bonhomme","Rocher","Flocon"} },
-    { "Volcan",      0xFF4A3535FF, 0xFFC2410CFF, 0xFFFF7A1AFF,
-      0xFF2A2A33FF, 0xFF3A3A46FF, 0xFFFF6A1AFF,
+    { "Volcan",      RGB(0x4A,0x35,0x35), RGB(0xC2,0x41,0x0C), RGB(0xFF,0x7A,0x1A),
+      RGB(0x2A,0x2A,0x33), RGB(0x3A,0x3A,0x46), RGB(0xFF,0x6A,0x1A),
       {"Volcan","Rocher","Feu","Crane","Lave"} },
-    { "Jungle",      0xFF1F7A3AFF, 0xFF0F4A5AFF, 0xFF6B4A1AFF,
-      0xFF3D6B2AFF, 0xFF4F8A35FF, 0xFFC9A227FF,
+    { "Jungle",      RGB(0x1F,0x7A,0x3A), RGB(0x0F,0x4A,0x5A), RGB(0x6B,0x4A,0x1A),
+      RGB(0x3D,0x6B,0x2A), RGB(0x4F,0x8A,0x35), RGB(0xC9,0xA2,0x27),
       {"Palmier","Plante","Feuille","Perroquet","Fleur"} },
-    { "Bonbons",     0xFFFF9AC8FF, 0xFFB57BFFFF, 0xFFFFFFFFFF,
-      0xFFFF5FA2FF, 0xFFFF8CC0FF, 0xFFFFFFFFFF,
+    { "Bonbons",     RGB(0xFF,0x9A,0xC8), RGB(0xB5,0x7B,0xFF), RGB(0xFF,0xFF,0xFF),
+      RGB(0xFF,0x5F,0xA2), RGB(0xFF,0x8C,0xC0), RGB(0xFF,0xFF,0xFF),
       {"Sucette","Bonbon","Gateau","Beignet","Glace"} },
-    { "Espace",      0xFF241A4AFF, 0xFF080520FF, 0xFF7A5CFFFF,
-      0xFF4A3A9AFF, 0xFF6A52D0FF, 0xFF48E0FFFF,
+    { "Espace",      RGB(0x24,0x1A,0x4A), RGB(0x08,0x05,0x20), RGB(0x7A,0x5C,0xFF),
+      RGB(0x4A,0x3A,0x9A), RGB(0x6A,0x52,0xD0), RGB(0x48,0xE0,0xFF),
       {"Etoile","Planete","Comete","Soucoupe","Lune"} },
-    { "Tresor d'or", 0xFFD4A017FF, 0xFF6A4A00FF, 0xFFFFF1A0FF,
-      0xFFE0A800FF, 0xFFFFD41FFF, 0xFFFFF1A0FF,
+    { "Tresor d'or", RGB(0xD4,0xA0,0x17), RGB(0x6A,0x4A,0x00), RGB(0xFF,0xF1,0xA0),
+      RGB(0xE0,0xA8,0x00), RGB(0xFF,0xD4,0x1F), RGB(0xFF,0xF1,0xA0),
       {"Diamant","Couronne","Tresor","Trophee","Joyau"} },
 };
 
@@ -152,12 +153,12 @@ typedef struct {
 } Odd;
 
 static const Odd ODDS[] = {
-    { "token",  "Jeton gratuit",    1.0f/137500.0f, 0xFFFF3D7FFF },
-    { "gold",   "Skin Or",          1.0f/1000000.0f,0xFFFFD41FFF },
-    { "c5000",  "5000 pieces",      1.0f/7813.0f,   0xFF9D4DFFFF },
-    { "c500",   "500 pieces",       1.0f/568.0f,    0xFF2B8CFFFF },
-    { "c75",    "75 pieces",        1.0f/100.0f,    0xFF3EC43EFF },
-    { "c10",    "10 pieces",        1.0f/75.0f,     0xFFF08A1CFF },
+    { "token",  "Jeton gratuit",    1.0f/137500.0f, RGB(0xFF,0x3D,0x7F) },
+    { "gold",   "Skin Or",          1.0f/1000000.0f,RGB(0xFF,0xD4,0x1F) },
+    { "c5000",  "5000 pieces",      1.0f/7813.0f,   RGB(0x9D,0x4D,0xFF) },
+    { "c500",   "500 pieces",       1.0f/568.0f,    RGB(0x2B,0x8C,0xFF) },
+    { "c75",    "75 pieces",        1.0f/100.0f,    RGB(0x3E,0xC4,0x3E) },
+    { "c10",    "10 pieces",        1.0f/75.0f,     RGB(0xF0,0x8A,0x1C) },
 };
 #define NUM_ODDS 6
 
