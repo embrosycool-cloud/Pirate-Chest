@@ -14,11 +14,6 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Installer les bibliothèques 3DS
-        run: |
-          dkp-pacman -Sy --noconfirm
-          dkp-pacman -S --noconfirm 3ds-dev
-
       - name: Compiler le .3dsx
         run: |
           export DEVKITPRO=/opt/devkitpro
