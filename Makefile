@@ -1,111 +1,78 @@
 #---------------------------------------------------------------------------------
 # Pirate Chest 3DS - Makefile
-# Compatible devkitARM + libctru + citro2d
 #---------------------------------------------------------------------------------
+export DEVKITPRO ?= /opt/devkitpro
+export DEVKITARM ?= $(DEVKITPRO)/devkitARM
+
+PATH := $(DEVKITARM)/bin:$(DEVKITPRO)/tools/bin:$(PATH)
+
 TARGET      := piratechest
 BUILD       := build
 SOURCES     := source
-DATA        := data
 INCLUDES    := include
 
-APP_TITLE   := Pirate Chest
+APP_TITLE       := Pirate Chest
 APP_DESCRIPTION := Ouvre des coffres !
-APP_AUTHOR  := Moi
+APP_AUTHOR      := Moi
 
-ICON        := icon.png
-
-#---------------------------------------------------------------------------------
-# options for code generation
-#---------------------------------------------------------------------------------
-ARCH     := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
-
-CFLAGS   := -g -Wall -O2 -mword-relocations \
-            -fomit-frame-pointer -ffunction-sections \
-            $(ARCH)
-CFLAGS   += $(INCLUDE) -DARM11 -D_3DS
-
-CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
-
-ASFLAGS  := -g $(ARCH)
-LDFLAGS  = -specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
-
-LIBS     := -lcitro2d -lcitro3d -lctru -lm
+ICON := icon.png
 
 #---------------------------------------------------------------------------------
-# list of directories containing libraries, this must be the top level containing
-# include and lib
-#---------------------------------------------------------------------------------
-LIBDIRS  := $(CTRULIB) $(PORTLIBS)
+PREFIX  := arm-none-eabi-
+CC      := $(PREFIX)gcc
+CXX     := $(PREFIX)g++
+AS      := $(PREFIX)as
+AR      := $(PREFIX)ar
+OBJCOPY := $(PREFIX)objcopy
+STRIP   := $(PREFIX)strip
+NM      := $(PREFIX)nm
+RANLIB  := $(PREFIX)ranlib
+
+ARCH    := -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
+
+CFLAGS  := -g -Wall -O2 -mword-relocations \
+           -fomit-frame-pointer -ffunction-sections \
+           $(ARCH) -DARM11 -D_3DS
+
+LDFLAGS := -specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(TARGET).map
+
+LIBS    := -lcitro2d -lcitro3d -lctru -lm
+
+LIBDIRS := $(DEVKITPRO)/libctru $(DEVKITPRO)/portlibs/3ds
+
+INCLUDE := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+           $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
+           -I$(CURDIR)/$(BUILD)
+
+LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 #---------------------------------------------------------------------------------
-# no real need to edit anything past this point unless you need to add additional
-# rules for different file extensions
-#---------------------------------------------------------------------------------
-ifneq ($(BUILD),$(notdir $(CURDIR)))
-#---------------------------------------------------------------------------------
-export OUTPUT  :=  $(CURDIR)/$(TARGET)
-export TOPDIR  :=  $(CURDIR)
+CFILES   := $(foreach dir,$(SOURCES),$(wildcard $(dir)/*.c))
+OFILES   := $(patsubst %.c,$(BUILD)/%.o,$(notdir $(CFILES)))
 
-export VPATH   :=  $(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-                   $(foreach dir,$(DATA),$(CURDIR)/$(dir))
+SMDH_ARGS := --title="$(APP_TITLE)" \
+             --description="$(APP_DESCRIPTION)" \
+             --author="$(APP_AUTHOR)" \
+             --icon=$(ICON)
 
-export DEPSDIR :=  $(CURDIR)/$(BUILD)
+.PHONY: all clean
 
-CFILES   := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
-CPPFILES := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
-SFILES   := $(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-
-export LD  := $(if $(CPPFILES),$(CXX),$(CC))
-
-export OFILES_SRC := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
-export OFILES_BIN :=
-export OFILES := $(OFILES_BIN) $(OFILES_SRC)
-
-export INCLUDE := $(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
-                  $(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-                  -I$(CURDIR)/$(BUILD)
-
-export LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
-
-export _3DSXFLAGS +=
-
-ifeq ($(strip $(ICON)),)
-    icons := $(wildcard *.png)
-    ifneq (,$(findstring $(TARGET).png,$(icons)))
-        export APP_ICON := $(TOPDIR)/$(TARGET).png
-    else
-        ifneq (,$(findstring icon.png,$(icons)))
-            export APP_ICON := $(TOPDIR)/icon.png
-        endif
-    endif
-else
-    export APP_ICON := $(TOPDIR)/$(ICON)
-endif
-
-ifeq ($(strip $(NO_SMDH)),)
-    export _3DSXFLAGS += --smdh=$(CURDIR)/$(TARGET).smdh
-endif
-
-.PHONY: $(BUILD) clean
+all: $(BUILD) $(TARGET).3dsx
 
 $(BUILD):
-	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	mkdir -p $(BUILD)
+
+$(BUILD)/%.o: source/%.c | $(BUILD)
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
+
+$(TARGET).elf: $(OFILES)
+	$(CC) $(LDFLAGS) $(OFILES) $(LIBPATHS) $(LIBS) -o $@
+
+$(TARGET).smdh: $(ICON)
+	smdhtool $(SMDH_ARGS) $@
+
+$(TARGET).3dsx: $(TARGET).elf $(TARGET).smdh
+	3dsxtool $< $@ --smdh=$(TARGET).smdh
 
 clean:
-	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(TARGET).smdh $(TARGET).elf
-
-#---------------------------------------------------------------------------------
-else
-#---------------------------------------------------------------------------------
-DEPENDS := $(OFILES:.o=.d)
-
-$(OUTPUT).3dsx  : $(OUTPUT).elf $(_3DSXDEPS)
-$(OUTPUT).elf   : $(OFILES)
-
--include $(DEPENDS)
-
-#---------------------------------------------------------------------------------
-endif
-#---------------------------------------------------------------------------------
+	rm -rf $(BUILD) $(TARGET).3dsx $(TARGET).smdh $(TARGET).elf $(TARGET).map
