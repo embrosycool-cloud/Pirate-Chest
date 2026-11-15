@@ -1,0 +1,99 @@
+name: Build Pirate Chest 3DS
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      - name: Installer les bibliothèques 3DS
+        run: |
+          dkp-pacman -Sy --noconfirm
+          dkp-pacman -S --noconfirm 3ds-dev
+
+      - name: Compiler le .3dsx
+        run: |
+          export DEVKITPRO=/opt/devkitpro
+          export DEVKITARM=$DEVKITPRO/devkitARM
+          export PATH=$DEVKITARM/bin:$DEVKITPRO/tools/bin:$PATH
+          export CTRULIB=$DEVKITPRO/libctru
+          export PORTLIBS=$DEVKITPRO/portlibs/3ds
+          make
+          echo "=== Fichiers produits ==="
+          ls -la piratechest.3dsx piratechest.smdh piratechest.elf 2>/dev/null || echo "Certains fichiers manquent"
+
+      - name: Préparer le bannertool et makerom
+        continue-on-error: true
+        run: |
+          apt-get update -qq && apt-get install -y -qq curl unzip 2>/dev/null || true
+
+          # Télécharger bannertool
+          BTRELEASES=$(curl -s https://api.github.com/repos/Steveice10/bannertool/releases/latest)
+          BT_URL=$(echo "$BTRELEASES" | grep browser_download_url | grep linux | grep -v arm | head -1 | cut -d'"' -f4)
+          if [ -n "$BT_URL" ]; then
+            curl -sL "$BT_URL" -o bt.zip
+            unzip -o bt.zip -d bt_dir
+            BANNERTOOL=$(find bt_dir -type f -name "bannertool" | head -1)
+            chmod +x "$BANNERTOOL"
+            echo "bannertool OK: $BANNERTOOL"
+          fi
+
+          # Télécharger makerom
+          MKRLEASES=$(curl -s https://api.github.com/repos/3DSGuy/Project_CTR/releases)
+          MKR_URL=$(echo "$MKRLEASES" | grep browser_download_url | grep -i makerom | grep linux | head -1 | cut -d'"' -f4)
+          if [ -n "$MKR_URL" ]; then
+            curl -sL "$MKR_URL" -o makerom_dl
+            # makerom peut être un zip ou un binaire direct
+            if file makerom_dl | grep -q ZIP; then
+              unzip -o makerom_dl -d mkr_dir
+              MAKEROM=$(find mkr_dir -type f -name "makerom" | head -1)
+            else
+              cp makerom_dl makerom_bin
+              MAKEROM=makerom_bin
+            fi
+            chmod +x "$MAKEROM"
+            echo "makerom OK: $MAKEROM"
+          fi
+
+          # Générer le bannière
+          if [ -n "$BANNERTOOL" ] && [ -f banner.png ] && [ -f audio.wav ]; then
+            "$BANNERTOOL" makebanner -i banner.png -a audio.wav -o banner.bnr
+            echo "banner.bnr OK"
+          fi
+
+          # Générer le CIA
+          if [ -n "$MAKEROM" ] && [ -f banner.bnr ] && [ -f piratechest.elf ] && [ -f piratechest.smdh ]; then
+            "$MAKEROM" -f cia -o PirateChest.cia \
+              -DAPP_ENCRYPTED=false \
+              -rsf app.rsf \
+              -target t \
+              -exefslogo \
+              -elf piratechest.elf \
+              -icon piratechest.smdh \
+              -banner banner.bnr
+            echo "PirateChest.cia OK"
+          else
+            echo "CIA ignoré (bannertool ou makerom non disponible)"
+          fi
+
+      - name: Lister les fichiers produits
+        run: |
+          echo "=== Résultat de la compilation ==="
+          ls -la *.3dsx *.cia *.smdh *.elf 2>/dev/null || echo "Vérifier les étapes précédentes"
+
+      - name: Uploader les artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PirateChest-3DS
+          path: |
+            piratechest.3dsx
+            PirateChest.cia
+          if-no-files-found: warn
